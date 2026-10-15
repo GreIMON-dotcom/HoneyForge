@@ -1,0 +1,16 @@
+.env
+.server.env
+.sandbox.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.db
+*.db-*
+infrastructure/certs/*
+!infrastructure/certs/.gitkeep
+infrastructure/geoip/*
+!infrastructure/geoip/.gitkeep
+artifacts/
+node_modules/
+.lab/

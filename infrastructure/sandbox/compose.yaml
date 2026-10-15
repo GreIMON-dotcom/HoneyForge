@@ -1,0 +1,75 @@
+name: honeyforge-sandbox
+x-runtime: &runtime
+  image: honeyforge:local
+  build:
+    context: ../..
+    dockerfile: infrastructure/Dockerfile
+  user: "10001:10001"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=32m,mode=1777"]
+  pids_limit: 128
+  mem_limit: 256m
+  cpus: 1.0
+  init: true
+services:
+  worker-image:
+    image: honeyforge-sandbox:local
+    build:
+      context: ../..
+      dockerfile: sandbox/Dockerfile
+    profiles: [build]
+    network_mode: none
+    command: ["python", "-c", "pass"]
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  networks-init:
+    <<: *runtime
+    command: ["python", "-c", "pass"]
+    restart: "no"
+    networks: [decoy, exposed]
+  controller:
+    <<: *runtime
+    command: ["python", "-m", "controller.main"]
+    restart: unless-stopped
+    group_add: ["${DOCKER_SOCKET_GID:-0}"]
+    environment:
+      NODE_ROLE: sandbox
+      HOST_ID: ${SANDBOX_HOST_ID:?Register the separate node first}
+      CONTROLLER_TOKEN: ${SANDBOX_CONTROLLER_TOKEN:?Register the separate node first}
+      CENTER_VPN_IP: ${CENTER_VPN_IP:?Private VPN IPv4 of the center}
+      MANAGEMENT_URL: https://nginx:9443
+      CA_FILE: /certs/ca.crt
+      LAB_PROJECT: honeyforge-sandbox
+      SANDBOX_IMAGE: honeyforge-sandbox:local
+      PUBLISH_PORTS: ${PUBLISH_PORTS:-}
+      PUBLISH_ADDRESS: ${PUBLISH_ADDRESS:-127.0.0.1}
+    extra_hosts: ["nginx:${CENTER_VPN_IP:?Private VPN IPv4 of the center}"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../../infrastructure/certs/ca.crt:/certs/ca.crt:ro
+      - /etc/honeyforge/sandbox-guard.json:/guard/host.json:ro
+    networks: [management]
+    depends_on:
+      networks-init: {condition: service_completed_successfully}
+networks:
+  management:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: hfh-mgmt
+      com.docker.network.bridge.enable_icc: "false"
+  decoy:
+    internal: true
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: hfh-decoy
+      com.docker.network.bridge.enable_icc: "false"
+  exposed:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: hfh-exposed
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+      com.docker.network.bridge.enable_icc: "false"

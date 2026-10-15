@@ -1,0 +1,13 @@
+.venv
+.git
+.env
+.server.env
+.sandbox.env
+**/__pycache__
+*.db*
+artifacts
+infrastructure/certs
+infrastructure/geoip
+.pytest_cache
+.lab
+node_modules

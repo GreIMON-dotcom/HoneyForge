@@ -1,0 +1,13 @@
+{
+	admin off
+}
+
+{$PUBLIC_DOMAIN} {
+	reverse_proxy https://nginx:8443 {
+		header_up Host {host}
+		transport http {
+			tls_trust_pool file /certs/ca.crt
+			tls_server_name nginx
+		}
+	}
+}

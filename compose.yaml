@@ -1,0 +1,163 @@
+name: honeyforge
+x-runtime: &runtime
+  build:
+    context: .
+    dockerfile: infrastructure/Dockerfile
+  image: honeyforge:local
+  restart: unless-stopped
+  user: "10001:10001"
+  read_only: true
+  tmpfs: ["/tmp:size=32m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 128
+  mem_limit: 256m
+  cpus: 1.0
+  init: true
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+asyncpg://honeyforge:${POSTGRES_PASSWORD:?Run setup.py}@postgres/honeyforge
+  ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Run setup.py}
+  CONTROLLER_TOKEN: ${CONTROLLER_TOKEN:?Run setup.py}
+  NOTIFIER_TOKEN: ${NOTIFIER_TOKEN:-}
+  ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-https://localhost:8443}
+  RETENTION_DAYS: ${RETENTION_DAYS:-30}
+  HEARTBEAT_TIMEOUT: ${HEARTBEAT_TIMEOUT:-45}
+  OPERATION_TIMEOUT: ${OPERATION_TIMEOUT:-180}
+  GEOIP_PROVIDER: ${GEOIP_PROVIDER:-none}
+  GEOIP_DATABASE: /geoip/${GEOIP_FILE:-ranges.csv}
+  GEOIP_ATTRIBUTION: ${GEOIP_ATTRIBUTION:-}
+  GEOIP_ATTRIBUTION_URL: ${GEOIP_ATTRIBUTION_URL:-}
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: honeyforge
+      POSTGRES_DB: honeyforge
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run setup.py}
+    volumes: ["database:/var/lib/postgresql/data"]
+    networks: [database]
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U honeyforge -d honeyforge"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  migrate:
+    <<: *runtime
+    restart: "no"
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    environment: *backend-env
+    networks: [database]
+    depends_on:
+      postgres: {condition: service_healthy}
+  backend:
+    <<: *runtime
+    environment:
+      <<: *backend-env
+      TLS_CERTIFICATE_FILE: /certs/server.crt
+    volumes:
+      - ./infrastructure/certs/server.crt:/certs/server.crt:ro
+      - ./infrastructure/geoip:/geoip:ro
+    networks: [database, control]
+    mem_limit: 512m
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  nginx:
+    image: nginxinc/nginx-unprivileged:1.28-alpine
+    user: "101:101"
+    read_only: true
+    tmpfs: ["/tmp:size=32m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped
+    ports: ["127.0.0.1:${MANAGEMENT_PORT:-8443}:8443"]
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/certs/server.crt:/certs/server.crt:ro
+      - ./infrastructure/certs/server.key:/certs/server.key:ro
+    networks: [control, management, ingress]
+    depends_on:
+      backend: {condition: service_healthy}
+  decoy-network:
+    <<: *runtime
+    restart: "no"
+    command: ["python", "-c", "pass"]
+    networks: [decoy, exposed]
+  controller:
+    <<: *runtime
+    command: ["python", "-m", "controller.main"]
+    group_add: ["${DOCKER_SOCKET_GID:-0}"]
+    environment:
+      MANAGEMENT_URL: https://nginx:9443
+      HOST_ID: lab-docker
+      CONTROLLER_TOKEN: ${CONTROLLER_TOKEN:?Run setup.py}
+      CA_FILE: /certs/ca.crt
+      LAB_PROJECT: ${COMPOSE_PROJECT_NAME:-honeyforge}
+      ORPHAN_POLICY: ${ORPHAN_POLICY:-remove}
+      PUBLISH_PORTS: ${PUBLISH_PORTS:-}
+      PUBLISH_ADDRESS: ${PUBLISH_ADDRESS:-127.0.0.1}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infrastructure/certs/ca.crt:/certs/ca.crt:ro
+    networks: [management]
+    depends_on:
+      nginx: {condition: service_started}
+      decoy-network: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json, time; h=json.load(open('/tmp/controller-health.json')); assert h['healthy'] and time.time()-h['at']<60"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  notifier:
+    <<: *runtime
+    profiles: [notify]
+    command: ["python", "-m", "notifier.main"]
+    mem_limit: 128m
+    environment:
+      MANAGEMENT_URL: https://nginx:9443
+      CA_FILE: /certs/ca.crt
+      NOTIFIER_TOKEN: ${NOTIFIER_TOKEN:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - ./infrastructure/certs/ca.crt:/certs/ca.crt:ro
+    networks: [management, egress]
+    depends_on:
+      nginx: {condition: service_started}
+  test-client:
+    <<: *runtime
+    profiles: [demo]
+    restart: "no"
+    entrypoint: ["python", "-m", "honeypots.probe"]
+    networks: [decoy]
+networks:
+  ingress:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+  database: {internal: true}
+  control: {internal: true}
+  management: {internal: true}
+  decoy: {internal: true}
+  egress:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "false"
+  exposed:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+      com.docker.network.bridge.enable_icc: "false"
+volumes:
+  database:

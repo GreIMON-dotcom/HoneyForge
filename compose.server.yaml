@@ -1,0 +1,40 @@
+services:
+  backend:
+    environment:
+      ALLOWED_ORIGIN: https://${PUBLIC_DOMAIN:?Configure PUBLIC_DOMAIN in .server.env}
+  edge:
+    build:
+      context: ./infrastructure/server
+    image: honeyforge-edge:local
+    user: "10001:10001"
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: "0"
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: 0.5
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?Configure PUBLIC_DOMAIN in .server.env}
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - ./infrastructure/server/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./infrastructure/certs/ca.crt:/certs/ca.crt:ro
+      - edge-data:/data
+      - edge-config:/config
+    networks: [ingress]
+    depends_on:
+      nginx: {condition: service_started}
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  edge-data:
+  edge-config:

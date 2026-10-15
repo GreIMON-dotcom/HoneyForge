@@ -1,0 +1,4 @@
+services:
+  nginx:
+    ports:
+      - "${CENTER_VPN_IP:?Set the private VPN IPv4 of the center}:9443:9443"

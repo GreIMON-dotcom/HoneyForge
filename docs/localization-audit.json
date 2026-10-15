@@ -1,0 +1,259 @@
+{
+  "unexplained": [],
+  "explained": [
+    {
+      "file": "frontend/app.js",
+      "line": 32,
+      "text": "HoneyForge",
+      "reason": "Название продукта или техническое обозначение."
+    },
+    {
+      "file": "frontend/app.js",
+      "line": 33,
+      "text": "HoneyForge",
+      "reason": "Название продукта или техническое обозначение."
+    },
+    {
+      "file": "frontend/app.js",
+      "line": 33,
+      "text": "HoneyForge v1.0",
+      "reason": "Название продукта или техническое обозначение."
+    },
+    {
+      "file": "frontend/api-docs.html",
+      "line": 1,
+      "text": "API HoneyForge",
+      "reason": "Название продукта и API."
+    },
+    {
+      "file": "backend/app/localization.py",
+      "line": 48,
+      "text": "Not Found",
+      "reason": "Исходное сообщение библиотеки — ключ сопоставления с русским сообщением."
+    },
+    {
+      "file": "backend/app/localization.py",
+      "line": 48,
+      "text": "Method Not Allowed",
+      "reason": "Исходное сообщение библиотеки — ключ сопоставления с русским сообщением."
+    },
+    {
+      "file": "backend/app/localization.py",
+      "line": 62,
+      "text": "Successful Response",
+      "reason": "Исходное сообщение библиотеки — ключ сопоставления с русским сообщением."
+    },
+    {
+      "file": "backend/app/localization.py",
+      "line": 62,
+      "text": "Validation Error",
+      "reason": "Исходное сообщение библиотеки — ключ сопоставления с русским сообщением."
+    },
+    {
+      "file": "backend/app/reporting.py",
+      "line": 248,
+      "text": "not configured",
+      "reason": "Совместимое значение API; интерфейс переводит его через labels.settingValue."
+    },
+    {
+      "file": "backend/app/reporting.py",
+      "line": 252,
+      "text": "within validity period",
+      "reason": "Совместимое значение API; интерфейс переводит его через labels.settingValue."
+    },
+    {
+      "file": "backend/app/reporting.py",
+      "line": 252,
+      "text": "outside validity period",
+      "reason": "Совместимое значение API; интерфейс переводит его через labels.settingValue."
+    },
+    {
+      "file": "honeypots/service.py",
+      "line": 95,
+      "text": "Synthetic administration login attempt",
+      "reason": "Исходное описание записанной телеметрии; сохраняется без преобразования данных."
+    },
+    {
+      "file": "honeypots/service.py",
+      "line": 105,
+      "text": "<!doctype html><html lang='ru'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>",
+      "reason": "HTML-разметка без отображаемого текста."
+    },
+    {
+      "file": "honeypots/service.py",
+      "line": 100,
+      "text": "Viewed synthetic service status",
+      "reason": "Исходное описание записанной телеметрии; сохраняется без преобразования данных."
+    },
+    {
+      "file": "honeypots/service.py",
+      "line": 44,
+      "text": "Laboratory client connected",
+      "reason": "Исходное описание записанной телеметрии; сохраняется без преобразования данных."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 21,
+      "text": "PRAGMA synchronous=FULL",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 13,
+      "text": "PRAGMA journal_mode=WAL",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 14,
+      "text": "\n                CREATE TABLE IF NOT EXISTS events (uid TEXT PRIMARY KEY, body TEXT NOT NULL, created REAL NOT NULL);\n                CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, body TEXT NOT NULL);\n            ",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 26,
+      "text": "BEGIN IMMEDIATE",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 29,
+      "text": "INSERT OR IGNORE INTO events VALUES (?, ?, ?)",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 38,
+      "text": "DELETE FROM events WHERE uid = ?",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 46,
+      "text": "INSERT INTO state VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET body=excluded.body",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 34,
+      "text": "SELECT body FROM events ORDER BY created, uid LIMIT ?",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 50,
+      "text": "SELECT body FROM state WHERE key = ?",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 42,
+      "text": "SELECT count(*) FROM events",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "shared/buffer.py",
+      "line": 27,
+      "text": "SELECT count(*) FROM events",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "infrastructure/scripts/check_postgres.py",
+      "line": 44,
+      "text": "SELECT 1 FROM pg_database WHERE datname='honeyforge_test'",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "infrastructure/scripts/check_postgres.py",
+      "line": 50,
+      "text": "DROP SCHEMA public CASCADE; CREATE SCHEMA public;",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "infrastructure/scripts/demo.py",
+      "line": 109,
+      "text": "import socket; s=socket.create_connection(('honeypot-low',8022),5); print(s.recv(256).decode()); s.close()",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/demo.py",
+      "line": 116,
+      "text": "import urllib.request; print(urllib.request.urlopen('http://honeypot-medium:8080/',timeout=5).read().decode())",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/demo.py",
+      "line": 146,
+      "text": "SELECT count(*) = count(DISTINCT (agent_id,event_uid)) FROM telemetry_events",
+      "reason": "Исполняемый SQL; перевод изменил бы поведение."
+    },
+    {
+      "file": "infrastructure/scripts/demo.py",
+      "line": 131,
+      "text": "import socket; s=socket.create_connection(('honeypot-low',8022),5); s.recv(256); s.close()",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/demo.py",
+      "line": 133,
+      "text": "from shared.buffer import DurableBuffer; print(DurableBuffer('/spool/events.db').size())",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/demo_local.py",
+      "line": 63,
+      "text": "import socket; s=socket.create_connection(('hf-decoy-",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/demo_local.py",
+      "line": 64,
+      "text": "import urllib.request; print(urllib.request.urlopen('http://hf-decoy-",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/download_pg.py",
+      "line": 16,
+      "text": "<a href=\"(https://sbp\\.enterprisedb\\.com/getfile\\.jsp\\?fileid=\\d+)\"><img alt=\"([^\"]+)\"",
+      "reason": "Регулярное выражение для страницы официального дистрибутива."
+    },
+    {
+      "file": "infrastructure/scripts/local_host.py",
+      "line": 35,
+      "text": "from shared.buffer import DurableBuffer; import json; b=DurableBuffer('/spool/events.db'); print(json.dumps({'configuration':b.get('configuration',{'assigned':False}), 'health':b.get('service_health',{}), 'queue_size':b.size()}))",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/local_host.py",
+      "line": 36,
+      "text": "from shared.buffer import DurableBuffer; import sys,json; DurableBuffer('/spool/events.db').set('provisioning_health',json.loads(sys.argv[1]))",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/local_host.py",
+      "line": 37,
+      "text": "python -c \"import time; from shared.buffer import DurableBuffer; h=DurableBuffer('/spool/events.db').get('agent_health',{}); assert time.time()-h.get('at',0)<60\"",
+      "reason": "Фиксированная исполняемая команда, не текст интерфейса."
+    },
+    {
+      "file": "infrastructure/scripts/local_host.py",
+      "line": 45,
+      "text": "not found",
+      "reason": "Маркер ошибки Docker CLI для проверки существования ресурса; не выводится приложением."
+    },
+    {
+      "file": "infrastructure/scripts/setup.py",
+      "line": 42,
+      "text": "HoneyForge Local Lab CA",
+      "reason": "Техническое имя субъекта сертификата; сохранено для совместимости и идентификации CA."
+    },
+    {
+      "file": "infrastructure/scripts/setup.py",
+      "line": 49,
+      "text": "HoneyForge laboratory",
+      "reason": "Техническое имя субъекта сертификата; сохранено для совместимости и идентификации CA."
+    }
+  ],
+  "translation_strings": 460,
+  "scope": "AST аргументов интерфейса, HTML-текст и атрибуты, строковые константы Python, словарь и проза документации; динамические значения дополнительно проверяются браузерным сценарием ui-localization.cjs."
+}

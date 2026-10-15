@@ -1,0 +1,16 @@
+{
+  "name": "honeyforge-browser-acceptance",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Проверки браузера и локализации; интерфейс приложения не требует сборки.",
+  "scripts": {
+    "test:ui": "node tests/ui-smoke.cjs",
+    "test:i18n": "node tests/i18n.cjs",
+    "test:ru-ui": "node tests/ui-localization.cjs",
+    "audit:i18n": "python infrastructure/scripts/audit_localization.py"
+  },
+  "devDependencies": {
+    "acorn": "8.15.0",
+    "playwright": "1.62.1"
+  }
+}
