@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import re
 import socket
+import ssl
 import subprocess
 import sys
 import yaml
@@ -88,3 +89,35 @@ def test_setup_adds_controller_identity_without_replacing_existing_secrets(tmp_p
     assert len(token)>=32
     setup.main()
     assert (tmp_path/'.env').read_text()==upgraded
+
+
+async def test_setup_certificates_support_strict_tls(tmp_path, monkeypatch):
+    import asyncio
+    from infrastructure.scripts import setup
+
+    monkeypatch.setattr(setup, 'ROOT', tmp_path)
+    setup.main()
+    certs=tmp_path/'infrastructure/certs'
+    server_context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    server_context.load_cert_chain(certs/'server.crt',certs/'server.key')
+    client_context=ssl.create_default_context(cafile=str(certs/'ca.crt'))
+    client_context.verify_flags|=ssl.VERIFY_X509_STRICT
+
+    async def reply(reader,writer):
+        writer.write(b'healthy')
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+
+    server=await asyncio.start_server(reply,'127.0.0.1',0,ssl=server_context)
+    try:
+        reader,writer=await asyncio.open_connection('127.0.0.1',server.sockets[0].getsockname()[1],
+            ssl=client_context,server_hostname='localhost')
+        try:
+            assert await reader.read()==b'healthy'
+        finally:
+            writer.close()
+            await writer.wait_closed()
+    finally:
+        server.close()
+        await server.wait_closed()

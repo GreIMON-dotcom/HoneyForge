@@ -50,6 +50,8 @@ def main():
     ca = (x509.CertificateBuilder().subject_name(ca_name).issuer_name(ca_name).public_key(ca_key.public_key())
           .serial_number(x509.random_serial_number()).not_valid_before(now-timedelta(minutes=5)).not_valid_after(now+timedelta(days=365))
           .add_extension(x509.BasicConstraints(ca=True, path_length=0), critical=True)
+          .add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), critical=False)
+          .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
           .add_extension(x509.KeyUsage(digital_signature=True, key_encipherment=False, content_commitment=False,
               data_encipherment=False, key_agreement=False, key_cert_sign=True, crl_sign=True, encipher_only=False, decipher_only=False), critical=True)
           .sign(ca_key, hashes.SHA256()))
@@ -58,6 +60,10 @@ def main():
               .not_valid_before(now-timedelta(minutes=5)).not_valid_after(now+timedelta(days=90))
               .add_extension(x509.SubjectAlternativeName([x509.DNSName("localhost"), x509.DNSName("nginx"), x509.IPAddress(ipaddress.ip_address("127.0.0.1"))]), critical=False)
               .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+              .add_extension(x509.SubjectKeyIdentifier.from_public_key(server_key.public_key()), critical=False)
+              .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
+              .add_extension(x509.KeyUsage(digital_signature=True, key_encipherment=True, content_commitment=False,
+                  data_encipherment=False, key_agreement=False, key_cert_sign=False, crl_sign=False, encipher_only=False, decipher_only=False), critical=True)
               .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False)
               .sign(ca_key, hashes.SHA256()))
     for name, key in [("ca.key",ca_key),("server.key",server_key)]:

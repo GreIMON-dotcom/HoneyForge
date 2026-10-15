@@ -3,22 +3,28 @@
 ## Требования
 
 - Docker Engine или Docker Desktop с контейнерами Linux и Compose версии 2.
-- Python 3.11 или новее на узле — для подготовки секретов и запуска демонстрации.
+- Python 3.11 или новее на узле — для подготовки секретов и запуска демонстрации. На Ubuntu/Debian может потребоваться пакет `python3-venv`.
 - Свободный порт 8443 на адресе 127.0.0.1.
 
 ## Первый запуск
 
+Команды выполняются из корня полученного репозитория, где лежит `compose.yaml`. Для Linux:
+
 ```sh
-python -m venv .venv
-. .venv/bin/activate            # PowerShell: .\.venv\Scripts\Activate.ps1
+python3 -m venv .venv
+. .venv/bin/activate
 python -m pip install -r requirements.txt
 python infrastructure/scripts/setup.py
-docker compose up --build -d --wait
+printf '\nDOCKER_SOCKET_GID=%s\n' "$(stat -c %g /var/run/docker.sock)" >> .env
+docker compose build backend
+docker compose up --no-build -d --wait
 ```
+
+Команды для Windows PowerShell приведены в [быстром запуске](../README.md#быстрый-запуск). Общий образ собирается через `backend` один раз, чтобы несколько сервисов не пытались одновременно записать один тег.
 
 `setup.py` создаёт `.env` с секретами базы данных, администратора и контроллера узла, а также локальный удостоверяющий центр и сертификат сервера. Существующие значения не заменяются; секреты не выводятся на экран. Добавьте `infrastructure/certs/ca.crt` в доверенные сертификаты браузера лаборатории и откройте https://localhost:8443. Имя и пароль администратора находятся в `.env`.
 
-При первом запуске сервер создаёт администратора, узел `lab-docker` и четыре профиля-шаблона. Ловушки и события не создаются.
+При первом запуске сервер создаёт администратора, узел `lab-docker` и профили-шаблоны. Ловушки и события не создаются.
 
 ## Сервисы Compose
 

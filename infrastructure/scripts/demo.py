@@ -79,7 +79,8 @@ async def main(keep):
         raise ValueError('Для демонстрации требуется адрес лаборатории HTTPS на loopback')
     context = ssl.create_default_context(cafile=str(ROOT / 'infrastructure/certs/ca.crt'))
     step('Сборка и запуск плоскости управления (ловушки в Compose не описаны)')
-    await asyncio.to_thread(compose, 'up', '--build', '-d', '--wait', '--remove-orphans')
+    await asyncio.to_thread(compose, 'build', 'backend')
+    await asyncio.to_thread(compose, 'up', '--no-build', '-d', '--wait', '--remove-orphans')
     created = []
     async with httpx.AsyncClient(base_url=base_url, verify=context, timeout=15, trust_env=False,
                                  headers={'X-HoneyForge': '1', 'Origin': base_url}) as client:
